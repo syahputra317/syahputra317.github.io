@@ -1,1 +1,98 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirim Email dengan EmailJS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Kirim Email</h2>
+        <form id="contact-form" class="space-y-6">
+            <div>
+                <label for="user_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Anda:</label>
+                <input type="text" id="user_name" name="user_name" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="user_email" class="block text-sm font-medium text-gray-700 mb-1">Email Anda:</label>
+                <input type="email" id="user_email" name="user_email" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subjek:</label>
+                <input type="text" id="subject" name="subject" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Pesan:</label>
+                <textarea id="message" name="message" rows="5" required
+                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm resize-y"></textarea>
+            </div>
+            <button type="submit" id="submit-button"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                Kirim Email
+            </button>
+            <div id="loading-spinner" class="hidden text-center text-blue-500 text-sm mt-4">
+                Mengirim...
+            </div>
+            <div id="response-message" class="hidden text-center mt-4 text-sm"></div>
+        </form>
+    </div>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
+    <script type="text/javascript">
+        // Inisialisasi EmailJS dengan Public Key Anda
+        // Ganti 'YOUR_PUBLIC_KEY' dengan EmailJS Public Key Anda
+        emailjs.init("JIvMICz-qaaqn4UJf");
+
+        // Dapatkan elemen formulir
+        const contactForm = document.getElementById('contact-form');
+        const submitButton = document.getElementById('submit-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const responseMessage = document.getElementById('response-message');
+
+        contactForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Mencegah pengiriman formulir default
+
+            // Sembunyikan pesan sebelumnya dan tampilkan loading spinner
+            responseMessage.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+            submitButton.disabled = true; // Nonaktifkan tombol saat mengirim
+
+            // Ganti 'YOUR_SERVICE_ID' dengan Service ID EmailJS Anda
+            // Ganti 'YOUR_TEMPLATE_ID' dengan Template ID EmailJS Anda
+            emailjs.sendForm('service_jvt0o4a', 'template_98jj3vo', this)
+                .then(function() {
+                    loadingSpinner.classList.add('hidden');
+                    responseMessage.classList.remove('hidden');
+                    responseMessage.classList.remove('text-red-500');
+                    responseMessage.classList.add('text-green-500');
+                    responseMessage.textContent = 'Email berhasil dikirim!';
+                    contactForm.reset(); // Bersihkan formulir setelah pengiriman berhasil
+                }, function(error) {
+                    loadingSpinner.classList.add('hidden');
+                    responseMessage.classList.remove('hidden');
+                    responseMessage.classList.remove('text-green-500');
+                    responseMessage.classList.add('text-red-500');
+                    responseMessage.textContent = 'Gagal mengirim email. Silakan coba lagi. Error: ' + JSON.stringify(error);
+                })
+                .finally(function() {
+                    submitButton.disabled = false; // Aktifkan kembali tombol
+                });
+        });
+    </script>
+</body>
+</html>
