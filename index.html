@@ -1,98 +1,323 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kirim Email dengan EmailJS</title>
+    <title>Kompresor Foto</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Menggunakan font Inter */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Light gray background */
+            background-color: #f0f4f8; /* Warna latar belakang yang lembut */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px; /* Padding untuk responsivitas di perangkat kecil */
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px; /* Lebar maksimum kontainer */
+        }
+        .input-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .input-field {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid #d1d5db;
+            width: 100%;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .btn-disabled {
+            background-color: #9ca3af;
+            color: #e5e7eb;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            display: block; /* Memastikan gambar berada di baris baru */
+            margin: 0 auto; /* Memusatkan gambar */
+        }
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        .message-box.info {
+            background-color: #e0f2fe; /* light blue */
+            color: #0284c7; /* dark blue */
+            border: 1px solid #a7d9f7;
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* light red */
+            color: #dc2626; /* dark red */
+            border: 1px solid #fca5a5;
+        }
+        #quality-value {
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        canvas {
+            display: none; /* Kanvas disembunyikan karena kita menggunakan tag img untuk menampilkan hasil */
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Kirim Email</h2>
-        <form id="contact-form" class="space-y-6">
-            <div>
-                <label for="user_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Anda:</label>
-                <input type="text" id="user_name" name="user_name" required
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Kompresor Foto</h1>
+
+        <div class="input-group mb-5">
+            <label for="image-upload" class="mb-2">Pilih Gambar:</label>
+            <input type="file" id="image-upload" accept="image/*" class="input-field">
+        </div>
+
+        <div class="input-group mb-5">
+            <label for="quality-range" class="mb-2">Kualitas Kompresi: <span id="quality-value">80</span>%</label>
+            <input type="range" id="quality-range" min="10" max="100" value="80" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg">
+        </div>
+
+        <div class="flex justify-center mb-6">
+            <button id="compress-btn" class="btn btn-primary btn-disabled" disabled>Kompres & Tampilkan</button>
+        </div>
+
+        <div id="loading-spinner" class="hidden text-center my-4">
+            <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-blue-500 motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
             </div>
-            <div>
-                <label for="user_email" class="block text-sm font-medium text-gray-700 mb-1">Email Anda:</label>
-                <input type="email" id="user_email" name="user_email" required
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <p class="text-gray-600 mt-2">Mengkompres gambar...</p>
+        </div>
+
+        <div id="results" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Hasil Kompresi</h2>
+            <p class="text-gray-700 text-center mb-2">Ukuran Asli: <span id="original-size" class="font-semibold">0 KB</span></p>
+            <p class="text-gray-700 text-center mb-4">Ukuran Terkompresi: <span id="compressed-size" class="font-semibold">0 KB</span></p>
+
+            <img id="compressed-image-display" src="#" alt="Compressed Image" class="result-image my-4">
+
+            <div class="flex justify-center">
+                <a id="download-btn" class="btn btn-primary text-center no-underline" download="compressed_image.jpg">Unduh Gambar</a>
             </div>
-            <div>
-                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subjek:</label>
-                <input type="text" id="subject" name="subject" required
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            </div>
-            <div>
-                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Pesan:</label>
-                <textarea id="message" name="message" rows="5" required
-                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm resize-y"></textarea>
-            </div>
-            <button type="submit" id="submit-button"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                Kirim Email
-            </button>
-            <div id="loading-spinner" class="hidden text-center text-blue-500 text-sm mt-4">
-                Mengirim...
-            </div>
-            <div id="response-message" class="hidden text-center mt-4 text-sm"></div>
-        </form>
+        </div>
+
+        <div id="message-box" class="hidden message-box info"></div>
+
     </div>
 
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
-    <script type="text/javascript">
-        // Inisialisasi EmailJS dengan Public Key Anda
-        // Ganti 'YOUR_PUBLIC_KEY' dengan EmailJS Public Key Anda
-        emailjs.init("JIvMICz-qaaqn4UJf");
+    <!-- Canvas tersembunyi untuk proses kompresi -->
+    <canvas id="image-canvas" style="display: none;"></canvas>
 
-        // Dapatkan elemen formulir
-        const contactForm = document.getElementById('contact-form');
-        const submitButton = document.getElementById('submit-button');
+    <script>
+        // Mendapatkan elemen DOM
+        const imageUpload = document.getElementById('image-upload');
+        const qualityRange = document.getElementById('quality-range');
+        const qualityValueSpan = document.getElementById('quality-value');
+        const compressButton = document.getElementById('compress-btn');
+        const originalSizeSpan = document.getElementById('original-size');
+        const compressedSizeSpan = document.getElementById('compressed-size');
+        const compressedImageDisplay = document.getElementById('compressed-image-display');
+        const downloadButton = document.getElementById('download-btn');
+        const resultsDiv = document.getElementById('results');
+        const imageCanvas = document.getElementById('image-canvas');
+        const ctx = imageCanvas.getContext('2d');
         const loadingSpinner = document.getElementById('loading-spinner');
-        const responseMessage = document.getElementById('response-message');
+        const messageBox = document.getElementById('message-box');
 
-        contactForm.addEventListener('submit', function(event) {
-            event.preventDefault(); // Mencegah pengiriman formulir default
+        let originalImageFile = null; // Menyimpan file gambar asli yang dipilih
+        let originalImage = new Image(); // Objek gambar asli
 
-            // Sembunyikan pesan sebelumnya dan tampilkan loading spinner
-            responseMessage.classList.add('hidden');
+        /**
+         * Menampilkan pesan di kotak pesan.
+         * @param {string} message Teks pesan.
+         * @param {'info' | 'error'} type Tipe pesan (info atau error).
+         */
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`; // Setel kelas berdasarkan tipe
+            messageBox.classList.remove('hidden');
+        }
+
+        /**
+         * Menyembunyikan kotak pesan.
+         */
+        function hideMessage() {
+            messageBox.classList.add('hidden');
+        }
+
+        /**
+         * Mengaktifkan atau menonaktifkan tombol kompresi.
+         * @param {boolean} enable true untuk mengaktifkan, false untuk menonaktifkan.
+         */
+        function toggleCompressButton(enable) {
+            if (enable) {
+                compressButton.removeAttribute('disabled');
+                compressButton.classList.remove('btn-disabled');
+            } else {
+                compressButton.setAttribute('disabled', true);
+                compressButton.classList.add('btn-disabled');
+            }
+        }
+
+        /**
+         * Mengubah ukuran byte menjadi format KB atau MB.
+         * @param {number} bytes Ukuran dalam byte.
+         * @returns {string} Ukuran yang diformat.
+         */
+        function formatBytes(bytes) {
+            if (bytes < 1024) {
+                return bytes + ' B';
+            } else if (bytes < 1024 * 1024) {
+                return (bytes / 1024).toFixed(2) + ' KB';
+            } else {
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+        }
+
+        /**
+         * Memproses dan mengkompres gambar.
+         * @param {File} file File gambar asli.
+         * @param {number} quality Kualitas JPEG (0-1).
+         */
+        function processImage(file, quality) {
+            if (!file) {
+                showMessage('Tidak ada gambar yang dipilih.', 'error');
+                return;
+            }
+
             loadingSpinner.classList.remove('hidden');
-            submitButton.disabled = true; // Nonaktifkan tombol saat mengirim
+            resultsDiv.classList.add('hidden'); // Sembunyikan hasil lama
+            hideMessage(); // Sembunyikan pesan sebelumnya
 
-            // Ganti 'YOUR_SERVICE_ID' dengan Service ID EmailJS Anda
-            // Ganti 'YOUR_TEMPLATE_ID' dengan Template ID EmailJS Anda
-            emailjs.sendForm('service_jvt0o4a', 'template_98jj3vo', this)
-                .then(function() {
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                originalImage.onload = () => {
+                    // Setel ukuran kanvas ke ukuran gambar asli
+                    imageCanvas.width = originalImage.width;
+                    imageCanvas.height = originalImage.height;
+
+                    // Gambar gambar asli ke kanvas
+                    ctx.drawImage(originalImage, 0, 0);
+
+                    // Kompres gambar dari kanvas
+                    // toDataURL mengembalikan gambar dalam format base64
+                    const compressedDataUrl = imageCanvas.toDataURL('image/jpeg', quality);
+
+                    // Tampilkan gambar yang dikompresi
+                    compressedImageDisplay.src = compressedDataUrl;
+
+                    // Hitung ukuran file terkompresi
+                    // Data URL memiliki format "data:image/jpeg;base64,..."
+                    // Ukuran byte dapat dihitung dari panjang string base64
+                    const compressedBytes = (compressedDataUrl.length * 0.75) - 2; // Estimasi ukuran byte dari base64
+                    compressedSizeSpan.textContent = formatBytes(compressedBytes);
+
+                    // Atur atribut unduh
+                    downloadButton.href = compressedDataUrl;
+                    downloadButton.download = `compressed_${file.name.split('.')[0]}.jpeg`;
+
                     loadingSpinner.classList.add('hidden');
-                    responseMessage.classList.remove('hidden');
-                    responseMessage.classList.remove('text-red-500');
-                    responseMessage.classList.add('text-green-500');
-                    responseMessage.textContent = 'Email berhasil dikirim!';
-                    contactForm.reset(); // Bersihkan formulir setelah pengiriman berhasil
-                }, function(error) {
+                    resultsDiv.classList.remove('hidden'); // Tampilkan hasil baru
+                };
+                originalImage.onerror = () => {
                     loadingSpinner.classList.add('hidden');
-                    responseMessage.classList.remove('hidden');
-                    responseMessage.classList.remove('text-green-500');
-                    responseMessage.classList.add('text-red-500');
-                    responseMessage.textContent = 'Gagal mengirim email. Silakan coba lagi. Error: ' + JSON.stringify(error);
-                })
-                .finally(function() {
-                    submitButton.disabled = false; // Aktifkan kembali tombol
-                });
+                    showMessage('Gagal memuat gambar. Pastikan ini adalah file gambar yang valid.', 'error');
+                };
+                originalImage.src = event.target.result;
+            };
+
+            reader.onerror = () => {
+                loadingSpinner.classList.add('hidden');
+                showMessage('Gagal membaca file.', 'error');
+            };
+
+            reader.readAsDataURL(file); // Mulai membaca file
+        }
+
+        // Event listener untuk input file
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                // Periksa tipe file
+                if (!file.type.startsWith('image/')) {
+                    showMessage('Hanya file gambar yang diizinkan (JPG, PNG, GIF, dll.).', 'error');
+                    originalImageFile = null;
+                    toggleCompressButton(false);
+                    resultsDiv.classList.add('hidden');
+                    return;
+                }
+
+                originalImageFile = file;
+                originalSizeSpan.textContent = formatBytes(file.size);
+                toggleCompressButton(true); // Aktifkan tombol kompresi
+                hideMessage(); // Sembunyikan pesan sebelumnya jika ada
+                resultsDiv.classList.add('hidden'); // Sembunyikan hasil saat gambar baru dipilih
+                compressedImageDisplay.src = '#'; // Bersihkan gambar tampilan
+            } else {
+                originalImageFile = null;
+                originalSizeSpan.textContent = '0 KB';
+                toggleCompressButton(false); // Nonaktifkan tombol kompresi
+                resultsDiv.classList.add('hidden');
+            }
         });
+
+        // Event listener untuk slider kualitas
+        qualityRange.addEventListener('input', (event) => {
+            qualityValueSpan.textContent = event.target.value;
+        });
+
+        // Event listener untuk tombol kompres
+        compressButton.addEventListener('click', () => {
+            if (originalImageFile) {
+                // Konversi kualitas dari 1-100 menjadi 0-1
+                const quality = parseInt(qualityRange.value) / 100;
+                processImage(originalImageFile, quality);
+            } else {
+                showMessage('Silakan pilih gambar terlebih dahulu.', 'info');
+            }
+        });
+
+        // Inisialisasi awal (nonaktifkan tombol sampai gambar dipilih)
+        toggleCompressButton(false);
+        showMessage('Pilih gambar untuk memulai kompresi.', 'info');
+
     </script>
 </body>
 </html>
