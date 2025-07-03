@@ -1,168 +1,234 @@
-import React, { useState } from 'react';
-import { Banknote, PlusCircle, ArrowUpCircle, ArrowDownCircle, ShoppingCart, Repeat, X } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCA Digital Bank</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar for transaction history */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Dark mode scrollbar */
+        .dark .overflow-y-auto::-webkit-scrollbar-track {
+            background: #333;
+        }
+        .dark .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        .dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 font-sans transition-colors duration-500">
 
-// Fungsi pembantu untuk memformat mata uang Rupiah Indonesia
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
-// Komponen utama aplikasi
-const App = () => {
-  const [balance, setBalance] = useState(5000000); // Saldo awal yang lebih besar
-  const [transactions, setTransactions] = useState([
-    { id: 1, type: 'deposit', amount: 2500000, description: 'Setor Gaji Bulanan', date: '2025-06-25 09:00' },
-    { id: 2, type: 'withdrawal', amount: 125000, description: 'Belanja Supermarket (Indomaret)', date: '2025-06-25 14:30' },
-    { id: 3, type: 'withdrawal', amount: 50000, description: 'Pembelian Kopi (Starbucks)', date: '2025-06-26 08:15' },
-    { id: 4, type: 'deposit', amount: 500000, description: 'Transfer Masuk (Teman)', date: '2025-06-26 11:00' },
-    { id: 5, type: 'withdrawal', amount: 300000, description: 'Pembayaran Listrik (PLN)', date: '2025-06-27 10:00' },
-    { id: 6, type: 'withdrawal', amount: 80000, description: 'Makan Siang (Warung Padang)', date: '2025-06-27 13:00' },
-    { id: 7, type: 'withdrawal', amount: 750000, description: 'Cicilan Kartu Kredit', date: '2025-06-28 09:30' },
-    { id: 8, type: 'deposit', amount: 1000000, description: 'Bonus Proyek', date: '2025-06-29 16:00' },
-    { id: 9, type: 'withdrawal', amount: 25000, description: 'Parkir Mall', date: '2025-06-30 19:00' },
-    { id: 10, type: 'withdrawal', amount: 150000, description: 'Pembelian Pulsa (Telkomsel)', date: '2025-07-01 07:00' },
-  ].sort((a, b) => new Date(b.date) - new Date(a.date))); // Urutkan transaksi terbaru di atas
-
-  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
-  const [addAmount, setAddAmount] = useState('');
-
-  // Fungsi untuk menambahkan dana (Setor Tunai)
-  const handleAddFunds = () => {
-    const amount = parseInt(addAmount);
-    if (isNaN(amount) || amount <= 0) {
-      console.error("Jumlah tidak valid. Harap masukkan angka positif.");
-      return;
-    }
-
-    setBalance(prevBalance => prevBalance + amount);
-    const newTransaction = {
-      id: transactions.length + 1,
-      type: 'deposit',
-      amount: amount,
-      description: 'Setor Tunai',
-      date: new Date().toLocaleString('id-ID', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }),
-    };
-    setTransactions(prevTransactions => [newTransaction, ...prevTransactions]); // Tambahkan di depan
-    setAddAmount('');
-    setIsAddFundsModalOpen(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 font-inter transition-colors duration-500">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8">
-        {/* Header Bank */}
-        <div className="flex items-center justify-center mb-6">
-          {/* Placeholder untuk logo BCA. Dalam aplikasi nyata, Anda akan menggunakan gambar logo. */}
-          <span className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mr-2">BCA</span>
-          <h1 className="text-3xl font-bold flex items-center">
-            Digital
-          </h1>
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8">
+        <!-- Header Bank -->
+        <div class="flex items-center justify-center mb-6">
+            <!-- Placeholder untuk logo BCA. Dalam aplikasi nyata, Anda akan menggunakan gambar logo. -->
+            <span class="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mr-2">BCA</span>
+            <h1 class="text-3xl font-bold flex items-center">
+                Digital
+            </h1>
         </div>
 
-        {/* Saldo Saat Ini */}
-        <div className="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-6 rounded-lg shadow-md mb-6 flex flex-col items-center justify-center">
-          <p className="text-lg opacity-90">Saldo Rekening Anda</p>
-          <p className="text-5xl font-extrabold mt-2">{formatCurrency(balance)}</p>
+        <!-- Saldo Saat Ini -->
+        <div class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-6 rounded-lg shadow-md mb-6 flex flex-col items-center justify-center">
+            <p class="text-lg opacity-90">Saldo Rekening Anda</p>
+            <p id="balance-display" class="text-5xl font-extrabold mt-2">Rp 0</p>
         </div>
 
-        {/* Tombol Aksi */}
-        <div className="flex justify-around gap-4 mb-8">
-          <button
-            onClick={() => setIsAddFundsModalOpen(true)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105"
-          >
-            <PlusCircle className="mr-2" size={20} /> Setor Dana
-          </button>
-          {/* Contoh tombol lain yang bisa ditambahkan */}
-          <button
-            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
-          >
-            <Repeat className="mr-2" size={20} /> Transfer
-          </button>
+        <!-- Tombol Aksi -->
+        <div class="flex justify-around gap-4 mb-8">
+            <button id="add-funds-button" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105">
+                <i data-lucide="plus-circle" class="mr-2"></i> Setor Dana
+            </button>
+            <button class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
+                <i data-lucide="repeat" class="mr-2"></i> Transfer
+            </button>
         </div>
 
-        {/* Riwayat Transaksi */}
-        <h2 className="text-2xl font-bold mb-4 flex items-center">
-          <Banknote className="mr-2 text-gray-600 dark:text-gray-400" size={24} />
-          Riwayat Transaksi
+        <!-- Riwayat Transaksi -->
+        <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i data-lucide="banknote" class="mr-2 text-gray-600 dark:text-gray-400"></i>
+            Riwayat Transaksi
         </h2>
-        <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-          {transactions.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi.</p>
-          ) : (
-            transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className={`flex items-center justify-between p-4 rounded-lg shadow-sm
-                  ${tx.type === 'deposit' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700' : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700'}
-                `}
-              >
-                <div className="flex items-center">
-                  {tx.type === 'deposit' ? (
-                    <ArrowDownCircle className="text-green-600 mr-3" size={24} />
-                  ) : (
-                    <ArrowUpCircle className="text-red-600 mr-3" size={24} />
-                  )}
-                  <div>
-                    <p className="font-semibold text-lg">{tx.description}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{tx.date}</p>
-                  </div>
-                </div>
-                <p className={`font-bold text-lg ${tx.type === 'deposit' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                  {tx.type === 'deposit' ? '+' : '-'} {formatCurrency(tx.amount)}
-                </p>
-              </div>
-            ))
-          )}
+        <div id="transactions-list" class="space-y-4 max-h-80 overflow-y-auto pr-2">
+            <!-- Transaksi akan dirender di sini oleh JavaScript -->
+            <p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi.</p>
         </div>
-      </div>
-
-      {/* Modal Setor Dana */}
-      {isAddFundsModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
-            <button
-              onClick={() => setIsAddFundsModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <X size={24} />
-            </button>
-            <h2 className="text-2xl font-bold mb-6 text-center">Setor Dana</h2>
-            <div className="mb-4">
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Jumlah (IDR)
-              </label>
-              <input
-                type="number"
-                id="amount"
-                value={addAmount}
-                onChange={(e) => setAddAmount(e.target.value)}
-                placeholder="Masukkan jumlah"
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <button
-              onClick={handleAddFunds}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors duration-300"
-            >
-              Tambah Dana
-            </button>
-          </div>
-        </div>
-      )}
     </div>
-  );
-};
 
-export default App;
+    <!-- Modal Setor Dana -->
+    <div id="add-funds-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
+            <button id="close-modal-button" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-2xl font-bold mb-6 text-center">Setor Dana</h2>
+            <div class="mb-4">
+                <label for="add-amount-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Jumlah (IDR)
+                </label>
+                <input
+                    type="number"
+                    id="add-amount-input"
+                    placeholder="Masukkan jumlah"
+                    class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+            </div>
+            <button id="confirm-add-funds-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors duration-300">
+                Tambah Dana
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk memformat mata uang Rupiah Indonesia
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            }).format(amount);
+        };
+
+        // State aplikasi
+        let balance = 5000000; // Saldo awal
+        let transactions = [
+            { id: 1, type: 'deposit', amount: 2500000, description: 'Setor Gaji Bulanan', date: '2025-06-25 09:00' },
+            { id: 2, type: 'withdrawal', amount: 125000, description: 'Belanja Supermarket (Indomaret)', date: '2025-06-25 14:30' },
+            { id: 3, type: 'withdrawal', amount: 50000, description: 'Pembelian Kopi (Starbucks)', date: '2025-06-26 08:15' },
+            { id: 4, type: 'deposit', amount: 500000, description: 'Transfer Masuk (Teman)', date: '2025-06-26 11:00' },
+            { id: 5, type: 'withdrawal', amount: 300000, description: 'Pembayaran Listrik (PLN)', date: '2025-06-27 10:00' },
+            { id: 6, type: 'withdrawal', amount: 80000, description: 'Makan Siang (Warung Padang)', date: '2025-06-27 13:00' },
+            { id: 7, type: 'withdrawal', amount: 750000, description: 'Cicilan Kartu Kredit', date: '2025-06-28 09:30' },
+            { id: 8, type: 'deposit', amount: 1000000, description: 'Bonus Proyek', date: '2025-06-29 16:00' },
+            { id: 9, type: 'withdrawal', amount: 25000, description: 'Parkir Mall', date: '2025-06-30 19:00' },
+            { id: 10, type: 'withdrawal', amount: 150000, description: 'Pembelian Pulsa (Telkomsel)', date: '2025-07-01 07:00' },
+        ].sort((a, b) => new Date(b.date) - new Date(a.date)); // Urutkan transaksi terbaru di atas
+
+        // Mendapatkan elemen DOM
+        const balanceDisplay = document.getElementById('balance-display');
+        const transactionsList = document.getElementById('transactions-list');
+        const addFundsButton = document.getElementById('add-funds-button');
+        const addFundsModal = document.getElementById('add-funds-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+        const addAmountInput = document.getElementById('add-amount-input');
+        const confirmAddFundsButton = document.getElementById('confirm-add-funds-button');
+
+        // Fungsi untuk merender saldo
+        const renderBalance = () => {
+            balanceDisplay.textContent = formatCurrency(balance);
+        };
+
+        // Fungsi untuk merender riwayat transaksi
+        const renderTransactions = () => {
+            transactionsList.innerHTML = ''; // Bersihkan daftar transaksi
+            if (transactions.length === 0) {
+                transactionsList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi.</p>';
+                return;
+            }
+
+            transactions.forEach(tx => {
+                const transactionItem = document.createElement('div');
+                transactionItem.className = `flex items-center justify-between p-4 rounded-lg shadow-sm ${
+                    tx.type === 'deposit' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700' : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700'
+                }`;
+
+                const icon = tx.type === 'deposit' ? 'arrow-down-circle' : 'arrow-up-circle';
+                const iconColor = tx.type === 'deposit' ? 'text-green-600' : 'text-red-600';
+                const amountColor = tx.type === 'deposit' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300';
+                const sign = tx.type === 'deposit' ? '+' : '-';
+
+                transactionItem.innerHTML = `
+                    <div class="flex items-center">
+                        <i data-lucide="${icon}" class="${iconColor} mr-3 w-6 h-6"></i>
+                        <div>
+                            <p class="font-semibold text-lg">${tx.description}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${tx.date}</p>
+                        </div>
+                    </div>
+                    <p class="font-bold text-lg ${amountColor}">
+                        ${sign} ${formatCurrency(tx.amount)}
+                    </p>
+                `;
+                transactionsList.appendChild(transactionItem);
+            });
+            // Pastikan ikon Lucide dirender setelah elemen ditambahkan ke DOM
+            lucide.createIcons();
+        };
+
+        // Fungsi untuk menampilkan modal
+        const showModal = () => {
+            addFundsModal.classList.remove('hidden');
+        };
+
+        // Fungsi untuk menyembunyikan modal
+        const hideModal = () => {
+            addFundsModal.classList.add('hidden');
+            addAmountInput.value = ''; // Bersihkan input
+        };
+
+        // Handler untuk menambahkan dana
+        const handleAddFunds = () => {
+            const amount = parseInt(addAmountInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                // Dalam aplikasi nyata, Anda akan menampilkan pesan kesalahan yang lebih baik
+                console.error("Jumlah tidak valid. Harap masukkan angka positif.");
+                return;
+            }
+
+            balance += amount;
+            const newTransaction = {
+                id: transactions.length + 1,
+                type: 'deposit',
+                amount: amount,
+                description: 'Setor Tunai',
+                date: new Date().toLocaleString('id-ID', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }),
+            };
+            transactions = [newTransaction, ...transactions]; // Tambahkan di depan
+
+            renderBalance();
+            renderTransactions();
+            hideModal();
+        };
+
+        // Event Listeners
+        addFundsButton.addEventListener('click', showModal);
+        closeModalButton.addEventListener('click', hideModal);
+        confirmAddFundsButton.addEventListener('click', handleAddFunds);
+
+        // Inisialisasi tampilan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBalance();
+            renderTransactions();
+            lucide.createIcons(); // Inisialisasi ikon Lucide setelah DOM dimuat
+        });
+    </script>
+</body>
+</html>
