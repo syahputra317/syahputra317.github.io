@@ -1,323 +1,168 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kompresor Foto</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Menggunakan font Inter */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Warna latar belakang yang lembut */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px; /* Padding untuk responsivitas di perangkat kecil */
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: white;
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px; /* Lebar maksimum kontainer */
-        }
-        .input-group label {
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-        .input-field {
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 2px solid #d1d5db;
-            width: 100%;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-        }
-        .btn-disabled {
-            background-color: #9ca3af;
-            color: #e5e7eb;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .result-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            display: block; /* Memastikan gambar berada di baris baru */
-            margin: 0 auto; /* Memusatkan gambar */
-        }
-        .message-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1.5rem;
-            font-weight: 500;
-            text-align: center;
-        }
-        .message-box.info {
-            background-color: #e0f2fe; /* light blue */
-            color: #0284c7; /* dark blue */
-            border: 1px solid #a7d9f7;
-        }
-        .message-box.error {
-            background-color: #fee2e2; /* light red */
-            color: #dc2626; /* dark red */
-            border: 1px solid #fca5a5;
-        }
-        #quality-value {
-            font-weight: bold;
-            color: #3b82f6;
-        }
-        canvas {
-            display: none; /* Kanvas disembunyikan karena kita menggunakan tag img untuk menampilkan hasil */
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Kompresor Foto</h1>
+import React, { useState } from 'react';
+import { Banknote, PlusCircle, ArrowUpCircle, ArrowDownCircle, ShoppingCart, Repeat, X } from 'lucide-react';
 
-        <div class="input-group mb-5">
-            <label for="image-upload" class="mb-2">Pilih Gambar:</label>
-            <input type="file" id="image-upload" accept="image/*" class="input-field">
+// Fungsi pembantu untuk memformat mata uang Rupiah Indonesia
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+// Komponen utama aplikasi
+const App = () => {
+  const [balance, setBalance] = useState(5000000); // Saldo awal yang lebih besar
+  const [transactions, setTransactions] = useState([
+    { id: 1, type: 'deposit', amount: 2500000, description: 'Setor Gaji Bulanan', date: '2025-06-25 09:00' },
+    { id: 2, type: 'withdrawal', amount: 125000, description: 'Belanja Supermarket (Indomaret)', date: '2025-06-25 14:30' },
+    { id: 3, type: 'withdrawal', amount: 50000, description: 'Pembelian Kopi (Starbucks)', date: '2025-06-26 08:15' },
+    { id: 4, type: 'deposit', amount: 500000, description: 'Transfer Masuk (Teman)', date: '2025-06-26 11:00' },
+    { id: 5, type: 'withdrawal', amount: 300000, description: 'Pembayaran Listrik (PLN)', date: '2025-06-27 10:00' },
+    { id: 6, type: 'withdrawal', amount: 80000, description: 'Makan Siang (Warung Padang)', date: '2025-06-27 13:00' },
+    { id: 7, type: 'withdrawal', amount: 750000, description: 'Cicilan Kartu Kredit', date: '2025-06-28 09:30' },
+    { id: 8, type: 'deposit', amount: 1000000, description: 'Bonus Proyek', date: '2025-06-29 16:00' },
+    { id: 9, type: 'withdrawal', amount: 25000, description: 'Parkir Mall', date: '2025-06-30 19:00' },
+    { id: 10, type: 'withdrawal', amount: 150000, description: 'Pembelian Pulsa (Telkomsel)', date: '2025-07-01 07:00' },
+  ].sort((a, b) => new Date(b.date) - new Date(a.date))); // Urutkan transaksi terbaru di atas
+
+  const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
+  const [addAmount, setAddAmount] = useState('');
+
+  // Fungsi untuk menambahkan dana (Setor Tunai)
+  const handleAddFunds = () => {
+    const amount = parseInt(addAmount);
+    if (isNaN(amount) || amount <= 0) {
+      console.error("Jumlah tidak valid. Harap masukkan angka positif.");
+      return;
+    }
+
+    setBalance(prevBalance => prevBalance + amount);
+    const newTransaction = {
+      id: transactions.length + 1,
+      type: 'deposit',
+      amount: amount,
+      description: 'Setor Tunai',
+      date: new Date().toLocaleString('id-ID', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+    };
+    setTransactions(prevTransactions => [newTransaction, ...prevTransactions]); // Tambahkan di depan
+    setAddAmount('');
+    setIsAddFundsModalOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 font-inter transition-colors duration-500">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8">
+        {/* Header Bank */}
+        <div className="flex items-center justify-center mb-6">
+          {/* Placeholder untuk logo BCA. Dalam aplikasi nyata, Anda akan menggunakan gambar logo. */}
+          <span className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 mr-2">BCA</span>
+          <h1 className="text-3xl font-bold flex items-center">
+            Digital
+          </h1>
         </div>
 
-        <div class="input-group mb-5">
-            <label for="quality-range" class="mb-2">Kualitas Kompresi: <span id="quality-value">80</span>%</label>
-            <input type="range" id="quality-range" min="10" max="100" value="80" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer range-lg">
+        {/* Saldo Saat Ini */}
+        <div className="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-6 rounded-lg shadow-md mb-6 flex flex-col items-center justify-center">
+          <p className="text-lg opacity-90">Saldo Rekening Anda</p>
+          <p className="text-5xl font-extrabold mt-2">{formatCurrency(balance)}</p>
         </div>
 
-        <div class="flex justify-center mb-6">
-            <button id="compress-btn" class="btn btn-primary btn-disabled" disabled>Kompres & Tampilkan</button>
+        {/* Tombol Aksi */}
+        <div className="flex justify-around gap-4 mb-8">
+          <button
+            onClick={() => setIsAddFundsModalOpen(true)}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+          >
+            <PlusCircle className="mr-2" size={20} /> Setor Dana
+          </button>
+          {/* Contoh tombol lain yang bisa ditambahkan */}
+          <button
+            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg shadow-md flex items-center justify-center transition-all duration-300 transform hover:scale-105 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white"
+          >
+            <Repeat className="mr-2" size={20} /> Transfer
+          </button>
         </div>
 
-        <div id="loading-spinner" class="hidden text-center my-4">
-            <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-blue-500 motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                <span class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Loading...</span>
+        {/* Riwayat Transaksi */}
+        <h2 className="text-2xl font-bold mb-4 flex items-center">
+          <Banknote className="mr-2 text-gray-600 dark:text-gray-400" size={24} />
+          Riwayat Transaksi
+        </h2>
+        <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
+          {transactions.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada transaksi.</p>
+          ) : (
+            transactions.map((tx) => (
+              <div
+                key={tx.id}
+                className={`flex items-center justify-between p-4 rounded-lg shadow-sm
+                  ${tx.type === 'deposit' ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700' : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700'}
+                `}
+              >
+                <div className="flex items-center">
+                  {tx.type === 'deposit' ? (
+                    <ArrowDownCircle className="text-green-600 mr-3" size={24} />
+                  ) : (
+                    <ArrowUpCircle className="text-red-600 mr-3" size={24} />
+                  )}
+                  <div>
+                    <p className="font-semibold text-lg">{tx.description}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{tx.date}</p>
+                  </div>
+                </div>
+                <p className={`font-bold text-lg ${tx.type === 'deposit' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+                  {tx.type === 'deposit' ? '+' : '-'} {formatCurrency(tx.amount)}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Modal Setor Dana */}
+      {isAddFundsModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
+            <button
+              onClick={() => setIsAddFundsModalOpen(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <h2 className="text-2xl font-bold mb-6 text-center">Setor Dana</h2>
+            <div className="mb-4">
+              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Jumlah (IDR)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                value={addAmount}
+                onChange={(e) => setAddAmount(e.target.value)}
+                placeholder="Masukkan jumlah"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
-            <p class="text-gray-600 mt-2">Mengkompres gambar...</p>
+            <button
+              onClick={handleAddFunds}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition-colors duration-300"
+            >
+              Tambah Dana
+            </button>
+          </div>
         </div>
-
-        <div id="results" class="hidden">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Hasil Kompresi</h2>
-            <p class="text-gray-700 text-center mb-2">Ukuran Asli: <span id="original-size" class="font-semibold">0 KB</span></p>
-            <p class="text-gray-700 text-center mb-4">Ukuran Terkompresi: <span id="compressed-size" class="font-semibold">0 KB</span></p>
-
-            <img id="compressed-image-display" src="#" alt="Compressed Image" class="result-image my-4">
-
-            <div class="flex justify-center">
-                <a id="download-btn" class="btn btn-primary text-center no-underline" download="compressed_image.jpg">Unduh Gambar</a>
-            </div>
-        </div>
-
-        <div id="message-box" class="hidden message-box info"></div>
-
+      )}
     </div>
+  );
+};
 
-    <!-- Canvas tersembunyi untuk proses kompresi -->
-    <canvas id="image-canvas" style="display: none;"></canvas>
-
-    <script>
-        // Mendapatkan elemen DOM
-        const imageUpload = document.getElementById('image-upload');
-        const qualityRange = document.getElementById('quality-range');
-        const qualityValueSpan = document.getElementById('quality-value');
-        const compressButton = document.getElementById('compress-btn');
-        const originalSizeSpan = document.getElementById('original-size');
-        const compressedSizeSpan = document.getElementById('compressed-size');
-        const compressedImageDisplay = document.getElementById('compressed-image-display');
-        const downloadButton = document.getElementById('download-btn');
-        const resultsDiv = document.getElementById('results');
-        const imageCanvas = document.getElementById('image-canvas');
-        const ctx = imageCanvas.getContext('2d');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const messageBox = document.getElementById('message-box');
-
-        let originalImageFile = null; // Menyimpan file gambar asli yang dipilih
-        let originalImage = new Image(); // Objek gambar asli
-
-        /**
-         * Menampilkan pesan di kotak pesan.
-         * @param {string} message Teks pesan.
-         * @param {'info' | 'error'} type Tipe pesan (info atau error).
-         */
-        function showMessage(message, type = 'info') {
-            messageBox.textContent = message;
-            messageBox.className = `message-box ${type}`; // Setel kelas berdasarkan tipe
-            messageBox.classList.remove('hidden');
-        }
-
-        /**
-         * Menyembunyikan kotak pesan.
-         */
-        function hideMessage() {
-            messageBox.classList.add('hidden');
-        }
-
-        /**
-         * Mengaktifkan atau menonaktifkan tombol kompresi.
-         * @param {boolean} enable true untuk mengaktifkan, false untuk menonaktifkan.
-         */
-        function toggleCompressButton(enable) {
-            if (enable) {
-                compressButton.removeAttribute('disabled');
-                compressButton.classList.remove('btn-disabled');
-            } else {
-                compressButton.setAttribute('disabled', true);
-                compressButton.classList.add('btn-disabled');
-            }
-        }
-
-        /**
-         * Mengubah ukuran byte menjadi format KB atau MB.
-         * @param {number} bytes Ukuran dalam byte.
-         * @returns {string} Ukuran yang diformat.
-         */
-        function formatBytes(bytes) {
-            if (bytes < 1024) {
-                return bytes + ' B';
-            } else if (bytes < 1024 * 1024) {
-                return (bytes / 1024).toFixed(2) + ' KB';
-            } else {
-                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-            }
-        }
-
-        /**
-         * Memproses dan mengkompres gambar.
-         * @param {File} file File gambar asli.
-         * @param {number} quality Kualitas JPEG (0-1).
-         */
-        function processImage(file, quality) {
-            if (!file) {
-                showMessage('Tidak ada gambar yang dipilih.', 'error');
-                return;
-            }
-
-            loadingSpinner.classList.remove('hidden');
-            resultsDiv.classList.add('hidden'); // Sembunyikan hasil lama
-            hideMessage(); // Sembunyikan pesan sebelumnya
-
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-                originalImage.onload = () => {
-                    // Setel ukuran kanvas ke ukuran gambar asli
-                    imageCanvas.width = originalImage.width;
-                    imageCanvas.height = originalImage.height;
-
-                    // Gambar gambar asli ke kanvas
-                    ctx.drawImage(originalImage, 0, 0);
-
-                    // Kompres gambar dari kanvas
-                    // toDataURL mengembalikan gambar dalam format base64
-                    const compressedDataUrl = imageCanvas.toDataURL('image/jpeg', quality);
-
-                    // Tampilkan gambar yang dikompresi
-                    compressedImageDisplay.src = compressedDataUrl;
-
-                    // Hitung ukuran file terkompresi
-                    // Data URL memiliki format "data:image/jpeg;base64,..."
-                    // Ukuran byte dapat dihitung dari panjang string base64
-                    const compressedBytes = (compressedDataUrl.length * 0.75) - 2; // Estimasi ukuran byte dari base64
-                    compressedSizeSpan.textContent = formatBytes(compressedBytes);
-
-                    // Atur atribut unduh
-                    downloadButton.href = compressedDataUrl;
-                    downloadButton.download = `compressed_${file.name.split('.')[0]}.jpeg`;
-
-                    loadingSpinner.classList.add('hidden');
-                    resultsDiv.classList.remove('hidden'); // Tampilkan hasil baru
-                };
-                originalImage.onerror = () => {
-                    loadingSpinner.classList.add('hidden');
-                    showMessage('Gagal memuat gambar. Pastikan ini adalah file gambar yang valid.', 'error');
-                };
-                originalImage.src = event.target.result;
-            };
-
-            reader.onerror = () => {
-                loadingSpinner.classList.add('hidden');
-                showMessage('Gagal membaca file.', 'error');
-            };
-
-            reader.readAsDataURL(file); // Mulai membaca file
-        }
-
-        // Event listener untuk input file
-        imageUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                // Periksa tipe file
-                if (!file.type.startsWith('image/')) {
-                    showMessage('Hanya file gambar yang diizinkan (JPG, PNG, GIF, dll.).', 'error');
-                    originalImageFile = null;
-                    toggleCompressButton(false);
-                    resultsDiv.classList.add('hidden');
-                    return;
-                }
-
-                originalImageFile = file;
-                originalSizeSpan.textContent = formatBytes(file.size);
-                toggleCompressButton(true); // Aktifkan tombol kompresi
-                hideMessage(); // Sembunyikan pesan sebelumnya jika ada
-                resultsDiv.classList.add('hidden'); // Sembunyikan hasil saat gambar baru dipilih
-                compressedImageDisplay.src = '#'; // Bersihkan gambar tampilan
-            } else {
-                originalImageFile = null;
-                originalSizeSpan.textContent = '0 KB';
-                toggleCompressButton(false); // Nonaktifkan tombol kompresi
-                resultsDiv.classList.add('hidden');
-            }
-        });
-
-        // Event listener untuk slider kualitas
-        qualityRange.addEventListener('input', (event) => {
-            qualityValueSpan.textContent = event.target.value;
-        });
-
-        // Event listener untuk tombol kompres
-        compressButton.addEventListener('click', () => {
-            if (originalImageFile) {
-                // Konversi kualitas dari 1-100 menjadi 0-1
-                const quality = parseInt(qualityRange.value) / 100;
-                processImage(originalImageFile, quality);
-            } else {
-                showMessage('Silakan pilih gambar terlebih dahulu.', 'info');
-            }
-        });
-
-        // Inisialisasi awal (nonaktifkan tombol sampai gambar dipilih)
-        toggleCompressButton(false);
-        showMessage('Pilih gambar untuk memulai kompresi.', 'info');
-
-    </script>
-</body>
-</html>
+export default App;
