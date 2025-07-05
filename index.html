@@ -195,7 +195,7 @@
 
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        let firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
         let app;
@@ -240,6 +240,16 @@
          * This function is called once when the window loads.
          */
         async function initializeFirebase() {
+            // IMPORTANT: Check if projectId is provided in firebaseConfig
+            if (!firebaseConfig || !firebaseConfig.projectId) {
+                const errorMessage = "Konfigurasi Firebase tidak lengkap. 'projectId' tidak ditemukan. Harap pastikan '__firebase_config' disediakan dengan benar oleh lingkungan.";
+                console.error(errorMessage);
+                showCustomModal(errorMessage);
+                loadingOverlay.classList.add('hidden');
+                chatApp.classList.remove('hidden');
+                return; // Stop initialization if projectId is missing
+            }
+
             try {
                 // Initialize Firebase app with the provided configuration
                 app = initializeApp(firebaseConfig);
