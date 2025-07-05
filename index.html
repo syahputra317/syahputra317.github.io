@@ -3,120 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Kode QR</title>
-    <!-- Memuat Tailwind CSS dari CDN -->
+    <title>Aplikasi Obrolan Real-time</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Mengatur font Inter sebagai default */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Warna latar belakang abu-abu terang */
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Memastikan halaman mengisi seluruh tinggi viewport */
+            min-height: 100vh;
             margin: 0;
+            padding: 1rem;
+            box-sizing: border-box;
         }
-        /* Styling untuk area kode QR */
-        #qrcode {
+        .chat-container {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 70vh;
+        }
+        .messages-box {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background-color: #e9ecef;
+        }
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .message.sent {
+            align-self: flex-end;
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .message.received {
+            align-self: flex-start;
+            background-color: #f3f4f6; /* gray-100 */
+            color: #374151; /* gray-700 */
+            border-bottom-left-radius: 0.25rem;
+        }
+        .message .sender {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            opacity: 0.8;
+        }
+        .message .text {
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        .message-input-area {
+            display: flex;
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb; /* gray-200 */
+            gap: 0.75rem;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem; /* Padding di sekitar kode QR */
-            background-color: #ffffff; /* Latar belakang putih untuk kode QR */
-            border-radius: 0.75rem; /* Sudut membulat */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan ringan */
-            min-height: 200px; /* Tinggi minimum untuk memastikan area terlihat */
+            z-index: 1000;
+            font-size: 1.2rem;
+            color: #4a5568;
+            border-radius: 1rem;
         }
-        /* Memastikan gambar QR code responsif di dalam kontainernya */
-        #qrcode img {
-            max-width: 100%;
-            height: auto;
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
         }
-        /* Styling untuk placeholder iklan */
-        .ad-placeholder {
-            background-color: #e0e0e0;
-            border: 1px dashed #9e9e9e;
-            color: #616161;
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             text-align: center;
-            padding: 1rem;
-            margin-top: 1.5rem;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-content button {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
-            font-size: 0.9rem;
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .modal-content button:hover {
+            background-color: #2563eb;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Generator Kode QR</h1>
+<body>
+    <div id="loading-overlay" class="loading-overlay">Memuat aplikasi obrolan...</div>
 
-        <div class="mb-6">
-            <textarea id="qrInput" rows="4"
-                      placeholder="Masukkan teks atau URL di sini untuk membuat kode QR..."
-                      class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4 text-gray-700 resize-y"></textarea>
-            <button onclick="generateQrCode()"
-                    class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition duration-300 ease-in-out shadow-md">
-                Buat Kode QR
+    <div class="chat-container hidden" id="chat-app">
+        <div class="bg-blue-600 text-white p-4 text-center rounded-t-xl shadow-md">
+            <h1 class="text-2xl font-bold">Obrolan Real-time</h1>
+            <p class="text-sm mt-1">ID Pengguna Anda: <span id="user-id" class="font-mono text-blue-200">Memuat...</span></p>
+        </div>
+
+        <div id="messages-box" class="messages-box">
+            <!-- Pesan akan dimuat di sini -->
+        </div>
+
+        <div class="message-input-area">
+            <input
+                type="text"
+                id="message-input"
+                placeholder="Ketik pesan Anda..."
+                class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+            />
+            <button
+                id="send-button"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+            >
+                Kirim
             </button>
-        </div>
-
-        <div id="qrcode" class="mt-6 flex justify-center items-center">
-            <!-- Kode QR akan muncul di sini -->
-            <p class="text-gray-500">Kode QR akan muncul di sini.</p>
-        </div>
-
-        <div id="errorMessage" class="text-red-600 mt-4 hidden">
-            <!-- Area untuk menampilkan pesan kesalahan -->
-            Harap masukkan teks atau URL untuk membuat kode QR.
-        </div>
-
-        <!-- Placeholder untuk Google Ads -->
-        <div class="ad-placeholder">
-            <!-- Di sinilah Anda akan menempatkan kode Google AdSense Anda -->
-            <!-- Contoh: <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7282624672073259"
-     crossorigin="anonymous"></script> -->
-            <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-YOUR_PUBLISHER_ID" data-ad-slot="YOUR_AD_SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins> -->
-            <!-- <script>(adsbygoogle = window.adsbygoogle || []).push({});</script> -->
-            <p>Area Iklan Google (Placeholder)</p>
-            <p class="text-xs mt-1">Untuk iklan nyata, Anda memerlukan akun Google AdSense dan situs web yang terverifikasi.</p>
         </div>
     </div>
 
-    <!-- Memuat pustaka qrcode.js dari CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
-    <script>
-        const qrInput = document.getElementById('qrInput');
-        const qrcodeDiv = document.getElementById('qrcode');
-        const errorMessage = document.getElementById('errorMessage');
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="custom-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+            <button id="modal-ok-button">OK</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let app;
+        let db;
+        let auth;
+        let currentUserId = null;
+        let isAuthReady = false;
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const chatApp = document.getElementById('chat-app');
+        const messagesBox = document.getElementById('messages-box');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const userIdDisplay = document.getElementById('user-id');
+        const customModal = document.getElementById('custom-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalOkButton = document.getElementById('modal-ok-button');
 
         /**
-         * Fungsi untuk menghasilkan kode QR dari input teks/URL.
+         * Displays a custom modal message to the user.
+         * @param {string} message - The message to display.
          */
-        function generateQrCode() {
-            const text = qrInput.value.trim();
+        function showCustomModal(message) {
+            modalMessage.textContent = message;
+            customModal.classList.remove('hidden');
+        }
 
-            // Sembunyikan pesan kesalahan
-            errorMessage.classList.add('hidden');
+        /**
+         * Hides the custom modal.
+         */
+        function hideCustomModal() {
+            customModal.classList.add('hidden');
+        }
 
-            // Hapus kode QR yang ada sebelumnya
-            qrcodeDiv.innerHTML = '';
+        // Event listener for the modal's OK button
+        modalOkButton.addEventListener('click', hideCustomModal);
 
-            if (text) {
-                // Buat instance QRCode
-                new QRCode(qrcodeDiv, {
-                    text: text,
-                    width: 200,
-                    height: 200,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H // Tingkat koreksi kesalahan tinggi
+        /**
+         * Initializes Firebase and sets up authentication.
+         */
+        async function initializeFirebase() {
+            try {
+                // Initialize Firebase app
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        userIdDisplay.textContent = currentUserId;
+                        isAuthReady = true;
+                        console.log("Pengguna terautentikasi:", currentUserId);
+                        // Once authenticated, hide loading and show chat app
+                        loadingOverlay.classList.add('hidden');
+                        chatApp.classList.remove('hidden');
+                        setupRealtimeMessagesListener(); // Setup listener after auth is ready
+                    } else {
+                        // If no user, try to sign in with custom token or anonymously
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error("Kesalahan saat autentikasi:", error);
+                            showCustomModal("Kesalahan saat autentikasi: " + error.message);
+                            loadingOverlay.classList.add('hidden');
+                            chatApp.classList.remove('hidden'); // Show app even if auth fails, but warn user
+                        }
+                    }
                 });
-            } else {
-                // Tampilkan pesan kesalahan jika input kosong
-                errorMessage.classList.remove('hidden');
-                qrcodeDiv.innerHTML = '<p class="text-gray-500">Kode QR akan muncul di sini.</p>'; // Kembalikan placeholder
+            } catch (error) {
+                console.error("Kesalahan saat menginisialisasi Firebase:", error);
+                showCustomModal("Kesalahan saat menginisialisasi Firebase: " + error.message);
+                loadingOverlay.classList.add('hidden');
+                chatApp.classList.remove('hidden'); // Show app even if init fails, but warn user
             }
         }
+
+        /**
+         * Displays a message in the chat box.
+         * @param {Object} messageData - The message object containing senderId, text, and timestamp.
+         * @param {boolean} isSent - True if the message was sent by the current user, false otherwise.
+         */
+        function displayMessage(messageData, isSent) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isSent ? 'sent' : 'received');
+
+            const senderElement = document.createElement('div');
+            senderElement.classList.add('sender');
+            senderElement.textContent = isSent ? 'Anda' : messageData.senderId;
+            messageElement.appendChild(senderElement);
+
+            const textElement = document.createElement('div');
+            textElement.classList.add('text');
+            textElement.textContent = messageData.text;
+            messageElement.appendChild(textElement);
+
+            messagesBox.appendChild(messageElement);
+            // Scroll to the bottom of the chat box
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        /**
+         * Sends a message to Firestore.
+         */
+        async function sendMessage() {
+            if (!isAuthReady || !currentUserId) {
+                showCustomModal("Aplikasi belum siap. Harap tunggu autentikasi.");
+                return;
+            }
+
+            const messageText = messageInput.value.trim();
+            if (messageText === '') {
+                showCustomModal("Pesan tidak boleh kosong.");
+                return;
+            }
+
+            try {
+                // Add a new document to the 'messages' collection
+                await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
+                    senderId: currentUserId,
+                    text: messageText,
+                    timestamp: serverTimestamp() // Firestore server timestamp
+                });
+                messageInput.value = ''; // Clear input field
+            } catch (e) {
+                console.error("Kesalahan saat menambahkan dokumen: ", e);
+                showCustomModal("Kesalahan saat mengirim pesan: " + e.message);
+            }
+        }
+
+        /**
+         * Sets up a real-time listener for messages from Firestore.
+         */
+        function setupRealtimeMessagesListener() {
+            if (!db || !isAuthReady) {
+                console.log("Firestore atau autentikasi belum siap untuk mendengarkan pesan.");
+                return;
+            }
+
+            // Create a query to get messages, ordered by timestamp
+            // Note: orderBy() is avoided as per instructions to prevent index issues.
+            // Data will be sorted in memory.
+            const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
+
+            onSnapshot(messagesCollectionRef, (snapshot) => {
+                let messages = [];
+                snapshot.forEach((doc) => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort messages by timestamp in memory
+                messages.sort((a, b) => {
+                    // Handle cases where timestamp might be null (e.g., pending server timestamp)
+                    const timeA = a.timestamp ? a.timestamp.toDate().getTime() : 0;
+                    const timeB = b.timestamp ? b.timestamp.toDate().getTime() : 0;
+                    return timeA - timeB;
+                });
+
+                messagesBox.innerHTML = ''; // Clear existing messages
+                messages.forEach(msg => {
+                    displayMessage(msg, msg.senderId === currentUserId);
+                });
+            }, (error) => {
+                console.error("Kesalahan saat mendengarkan pesan: ", error);
+                showCustomModal("Kesalahan saat memuat pesan: " + error.message);
+            });
+        }
+
+        // Event listeners for sending messages
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize Firebase when the window loads
+        window.onload = initializeFirebase;
     </script>
 </body>
 </html>
