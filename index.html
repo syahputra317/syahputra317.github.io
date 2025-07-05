@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Obrolan Real-time</title>
+    <title>Aplikasi Obrolan Real-time (Alternatif)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f8fafc; /* blue-50 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,133 +21,157 @@
         }
         .chat-container {
             background-color: #ffffff;
-            border-radius: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem; /* More rounded */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow */
             width: 100%;
-            max-width: 500px;
+            max-width: 600px; /* Wider container */
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            min-height: 70vh;
+            min-height: 80vh; /* Taller */
+            border: 1px solid #e2e8f0; /* gray-200 border */
+        }
+        .header {
+            background: linear-gradient(to right, #4c51bf, #6b46c1); /* Deeper purple gradient */
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .messages-box {
             flex-grow: 1;
-            padding: 1.5rem;
+            padding: 1.5rem 2rem; /* More padding */
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            background-color: #e9ecef;
+            gap: 1rem; /* More space between messages */
+            background-color: #f0f4f8; /* Lighter background for messages */
         }
         .message {
-            max-width: 80%;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
+            max-width: 75%; /* Slightly narrower messages */
+            padding: 0.85rem 1.25rem;
+            border-radius: 1.25rem; /* More rounded message bubbles */
             word-wrap: break-word;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative; /* For triangle */
         }
         .message.sent {
             align-self: flex-end;
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #6b46c1; /* purple-600 */
             color: white;
-            border-bottom-right-radius: 0.25rem;
+            border-bottom-right-radius: 0.5rem; /* Tapered corner */
         }
         .message.received {
             align-self: flex-start;
-            background-color: #f3f4f6; /* gray-100 */
+            background-color: #e0e7ff; /* indigo-100 */
             color: #374151; /* gray-700 */
-            border-bottom-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.5rem; /* Tapered corner */
         }
         .message .sender {
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            opacity: 0.8;
+            font-size: 0.8rem;
+            font-weight: 700; /* Bolder sender name */
+            margin-bottom: 0.3rem;
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.9); /* For sent messages */
+        }
+        .message.received .sender {
+            color: #4f46e5; /* indigo-600 for received sender */
         }
         .message .text {
-            font-size: 1rem;
-            line-height: 1.4;
+            font-size: 1.05rem; /* Slightly larger text */
+            line-height: 1.5;
         }
         .message-input-area {
             display: flex;
-            padding: 1.5rem;
-            border-top: 1px solid #e5e7eb; /* gray-200 */
-            gap: 0.75rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e2e8f0; /* gray-200 */
+            gap: 1rem; /* More space for input elements */
+            background-color: #ffffff;
         }
-        .loading-overlay {
+        .loading-overlay, .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9); /* More opaque */
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            font-size: 1.2rem;
+            font-size: 1.4rem; /* Larger text */
             color: #4a5568;
             border-radius: 1rem;
+            backdrop-filter: blur(5px); /* Blur effect */
         }
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.6); /* Darker overlay */
             z-index: 1001;
         }
         .modal-content {
             background: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            padding: 2.5rem; /* More padding */
+            border-radius: 1rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); /* Stronger shadow */
             text-align: center;
-            max-width: 400px;
+            max-width: 450px; /* Wider modal */
             width: 90%;
+            border: 1px solid #cbd5e0; /* gray-300 border */
         }
         .modal-content button {
-            margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            background-color: #3b82f6;
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            border-radius: 0.75rem; /* More rounded button */
+            background-color: #6b46c1; /* purple-600 */
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.3s ease, transform 0.1s ease; /* Smooth transition */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .modal-content button:hover {
-            background-color: #2563eb;
+            background-color: #5a3a9b; /* Darker purple */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        .modal-content button:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" class="loading-overlay">Memuat aplikasi obrolan...</div>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="flex items-center space-x-3">
+            <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Memuat aplikasi obrolan...</span>
+        </div>
+    </div>
 
     <div class="chat-container hidden" id="chat-app">
-        <div class="bg-blue-600 text-white p-4 text-center rounded-t-xl shadow-md">
-            <h1 class="text-2xl font-bold">Obrolan Real-time</h1>
-            <p class="text-sm mt-1">ID Pengguna Anda: <span id="user-id" class="font-mono text-blue-200">Memuat...</span></p>
+        <div class="header">
+            <h1 class="text-3xl font-bold mb-2">Obrolan Real-time</h1>
+            <p class="text-sm opacity-90">ID Pengguna Anda: <span id="user-id" class="font-mono text-purple-200 tracking-wide">Memuat...</span></p>
         </div>
 
         <div id="messages-box" class="messages-box">
             <!-- Pesan akan dimuat di sini -->
+            <div class="text-center text-gray-500 text-sm italic">Mulai obrolan Anda!</div>
         </div>
 
         <div class="message-input-area">
             <input
                 type="text"
                 id="message-input"
-                placeholder="Ketik pesan Anda..."
-                class="flex-grow p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                placeholder="Ketik pesan Anda di sini..."
+                class="flex-grow p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-3 focus:ring-purple-400 transition duration-200 text-lg"
             />
             <button
                 id="send-button"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-md"
+                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition duration-200 shadow-lg transform hover:scale-105 active:scale-95"
             >
                 Kirim
             </button>
@@ -157,7 +181,7 @@
     <!-- Custom Modal for Alerts/Confirmations -->
     <div id="custom-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <p id="modal-message"></p>
+            <p id="modal-message" class="text-lg text-gray-800 mb-4"></p>
             <button id="modal-ok-button">OK</button>
         </div>
     </div>
@@ -167,7 +191,7 @@
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables provided by the Canvas environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -180,6 +204,7 @@
         let currentUserId = null;
         let isAuthReady = false;
 
+        // Get DOM elements
         const loadingOverlay = document.getElementById('loading-overlay');
         const chatApp = document.getElementById('chat-app');
         const messagesBox = document.getElementById('messages-box');
@@ -192,6 +217,7 @@
 
         /**
          * Displays a custom modal message to the user.
+         * Replaces alert() for better UI control.
          * @param {string} message - The message to display.
          */
         function showCustomModal(message) {
@@ -206,66 +232,76 @@
             customModal.classList.add('hidden');
         }
 
-        // Event listener for the modal's OK button
+        // Event listener for the modal's OK button to close it
         modalOkButton.addEventListener('click', hideCustomModal);
 
         /**
-         * Initializes Firebase and sets up authentication.
+         * Initializes Firebase services (App, Firestore, Auth) and sets up authentication.
+         * This function is called once when the window loads.
          */
         async function initializeFirebase() {
             try {
-                // Initialize Firebase app
+                // Initialize Firebase app with the provided configuration
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Listen for authentication state changes
+                // Set up an authentication state change listener.
+                // This listener will be triggered whenever the user's sign-in state changes.
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        // User is signed in. Get their UID.
                         currentUserId = user.uid;
-                        userIdDisplay.textContent = currentUserId;
-                        isAuthReady = true;
-                        console.log("Pengguna terautentikasi:", currentUserId);
-                        // Once authenticated, hide loading and show chat app
+                        userIdDisplay.textContent = currentUserId; // Display user ID on UI
+                        isAuthReady = true; // Mark authentication as ready
+                        console.log("User authenticated:", currentUserId);
+
+                        // Hide loading overlay and show the chat application
                         loadingOverlay.classList.add('hidden');
                         chatApp.classList.remove('hidden');
-                        setupRealtimeMessagesListener(); // Setup listener after auth is ready
+
+                        // Set up the real-time messages listener only after authentication is confirmed
+                        setupRealtimeMessagesListener();
                     } else {
-                        // If no user, try to sign in with custom token or anonymously
+                        // No user is signed in. Attempt to sign in.
                         try {
                             if (initialAuthToken) {
+                                // If a custom auth token is provided, use it for sign-in
                                 await signInWithCustomToken(auth, initialAuthToken);
                             } else {
+                                // Otherwise, sign in anonymously
                                 await signInAnonymously(auth);
                             }
                         } catch (error) {
-                            console.error("Kesalahan saat autentikasi:", error);
-                            showCustomModal("Kesalahan saat autentikasi: " + error.message);
+                            // Handle authentication errors
+                            console.error("Error during authentication:", error);
+                            showCustomModal("Error during authentication: " + error.message);
                             loadingOverlay.classList.add('hidden');
                             chatApp.classList.remove('hidden'); // Show app even if auth fails, but warn user
                         }
                     }
                 });
             } catch (error) {
-                console.error("Kesalahan saat menginisialisasi Firebase:", error);
-                showCustomModal("Kesalahan saat menginisialisasi Firebase: " + error.message);
+                // Handle Firebase initialization errors
+                console.error("Error initializing Firebase:", error);
+                showCustomModal("Error initializing Firebase: " + error.message);
                 loadingOverlay.classList.add('hidden');
                 chatApp.classList.remove('hidden'); // Show app even if init fails, but warn user
             }
         }
 
         /**
-         * Displays a message in the chat box.
+         * Displays a single message in the chat box UI.
          * @param {Object} messageData - The message object containing senderId, text, and timestamp.
          * @param {boolean} isSent - True if the message was sent by the current user, false otherwise.
          */
         function displayMessage(messageData, isSent) {
             const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(isSent ? 'sent' : 'received');
+            messageElement.classList.add('message', isSent ? 'sent' : 'received');
 
             const senderElement = document.createElement('div');
             senderElement.classList.add('sender');
+            // Display 'You' for the current user, otherwise display the sender's ID
             senderElement.textContent = isSent ? 'Anda' : messageData.senderId;
             messageElement.appendChild(senderElement);
 
@@ -275,78 +311,97 @@
             messageElement.appendChild(textElement);
 
             messagesBox.appendChild(messageElement);
-            // Scroll to the bottom of the chat box
+            // Scroll to the very bottom of the chat box to show the latest message
             messagesBox.scrollTop = messagesBox.scrollHeight;
         }
 
         /**
-         * Sends a message to Firestore.
+         * Handles sending a message to the Firestore database.
+         * Validates input and adds the message with a server timestamp.
          */
         async function sendMessage() {
+            // Ensure Firebase authentication is ready before sending messages
             if (!isAuthReady || !currentUserId) {
                 showCustomModal("Aplikasi belum siap. Harap tunggu autentikasi.");
                 return;
             }
 
             const messageText = messageInput.value.trim();
+            // Do not send empty messages
             if (messageText === '') {
                 showCustomModal("Pesan tidak boleh kosong.");
                 return;
             }
 
             try {
-                // Add a new document to the 'messages' collection
+                // Add a new document to the 'messages' collection in Firestore.
+                // The path ensures it's public data within the current app's artifacts.
                 await addDoc(collection(db, `artifacts/${appId}/public/data/messages`), {
-                    senderId: currentUserId,
-                    text: messageText,
-                    timestamp: serverTimestamp() // Firestore server timestamp
+                    senderId: currentUserId, // The ID of the user sending the message
+                    text: messageText,       // The content of the message
+                    timestamp: serverTimestamp() // Firestore's server timestamp for accurate ordering
                 });
-                messageInput.value = ''; // Clear input field
+                messageInput.value = ''; // Clear the input field after sending
             } catch (e) {
-                console.error("Kesalahan saat menambahkan dokumen: ", e);
-                showCustomModal("Kesalahan saat mengirim pesan: " + e.message);
+                // Log and show any errors during the message sending process
+                console.error("Error adding document: ", e);
+                showCustomModal("Error sending message: " + e.message);
             }
         }
 
         /**
          * Sets up a real-time listener for messages from Firestore.
+         * It fetches messages and updates the UI whenever there's a change.
          */
         function setupRealtimeMessagesListener() {
+            // Ensure Firestore is initialized and authentication is ready
             if (!db || !isAuthReady) {
-                console.log("Firestore atau autentikasi belum siap untuk mendengarkan pesan.");
+                console.log("Firestore or authentication not ready to listen for messages.");
                 return;
             }
 
-            // Create a query to get messages, ordered by timestamp
-            // Note: orderBy() is avoided as per instructions to prevent index issues.
-            // Data will be sorted in memory.
+            // Get a reference to the messages collection
             const messagesCollectionRef = collection(db, `artifacts/${appId}/public/data/messages`);
 
+            // Use onSnapshot to listen for real-time updates to the collection
             onSnapshot(messagesCollectionRef, (snapshot) => {
                 let messages = [];
+                // Iterate through each document in the snapshot
                 snapshot.forEach((doc) => {
                     messages.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Sort messages by timestamp in memory
+                // Sort messages by timestamp in memory.
+                // Firestore's orderBy() is avoided as per instructions to prevent index issues.
                 messages.sort((a, b) => {
-                    // Handle cases where timestamp might be null (e.g., pending server timestamp)
+                    // Convert Firestore Timestamps to milliseconds for comparison.
+                    // Handle cases where timestamp might be null (e.g., pending server timestamp for new docs).
                     const timeA = a.timestamp ? a.timestamp.toDate().getTime() : 0;
                     const timeB = b.timestamp ? b.timestamp.toDate().getTime() : 0;
-                    return timeA - timeB;
+                    return timeA - timeB; // Ascending order (oldest first)
                 });
 
-                messagesBox.innerHTML = ''; // Clear existing messages
-                messages.forEach(msg => {
-                    displayMessage(msg, msg.senderId === currentUserId);
-                });
+                messagesBox.innerHTML = ''; // Clear existing messages in the UI
+                if (messages.length === 0) {
+                    // Display a placeholder if no messages exist
+                    const noMessagesDiv = document.createElement('div');
+                    noMessagesDiv.classList.add('text-center', 'text-gray-500', 'text-sm', 'italic');
+                    noMessagesDiv.textContent = 'Mulai obrolan Anda!';
+                    messagesBox.appendChild(noMessagesDiv);
+                } else {
+                    // Display each message
+                    messages.forEach(msg => {
+                        displayMessage(msg, msg.senderId === currentUserId);
+                    });
+                }
             }, (error) => {
-                console.error("Kesalahan saat mendengarkan pesan: ", error);
-                showCustomModal("Kesalahan saat memuat pesan: " + error.message);
+                // Handle errors during the real-time listening process
+                console.error("Error listening to messages: ", error);
+                showCustomModal("Error loading messages: " + error.message);
             });
         }
 
-        // Event listeners for sending messages
+        // Add event listeners for sending messages
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -354,7 +409,7 @@
             }
         });
 
-        // Initialize Firebase when the window loads
+        // Initialize Firebase when the entire window content has loaded
         window.onload = initializeFirebase;
     </script>
 </body>
